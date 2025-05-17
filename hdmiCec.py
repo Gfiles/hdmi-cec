@@ -5,20 +5,26 @@ from time import sleep
 
 def getStatus():
 	noStatus = True
+	count = 0 
 	while noStatus:
 		try:
-			tvStatus = tv.is_on()
+			status = tv.is_on()
+			#print(f"getStatus: {status}")
 			noStatus = False
+			count += 1
+			if count > 30:
+				sys.exit()
 		except:
 			print("No Status")
 			sleep(2)
-	return tvStatus
+	return status
 	
 try:
 	import cec # pip install cec
 except:
 	subprocess.run(["sudo", "apt", "install", "libcec-dev"])
 
+count = 0
 if len(sys.argv) > 1:
 	command = sys.argv[1]
 	cec.init()
@@ -29,14 +35,19 @@ if len(sys.argv) > 1:
 		while not tvStatus:
 			tv.power_on()
 			print("Power on")
-			sleep(2)
 			tvStatus = getStatus()
+			#print(f"Status: {tvStatus}")
+			count += 1
+			if count > 10:
+				sys.exit()
 	elif command.lower() == "off":
 		while tvStatus:
 			tv.standby()
 			print("Power off")
-			sleep(2)
 			tvStatus = getStatus()
+			count += 1
+			if count > 10:
+				sys.exit()
 	elif command.lower() == "status":
 		tvStatus = getStatus()
 		if tvStatus:
